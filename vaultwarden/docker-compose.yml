@@ -1,0 +1,14 @@
+services:
+  app:
+    container_name: vaultwarden-app
+    image: vaultwarden/server
+    restart: unless-stopped
+    volumes:
+      - /docker/vaultwarden/app:/data:rw
+    environment:
+      DOMAIN: https://vwarden.${DOMAIN}
+
+networks:
+  default:
+    name: gateway_network
+    external: true
