@@ -1,0 +1,42 @@
+{
+	acme_dns porkbun {
+		api_key {$PORKBUN_API_KEY}
+		api_secret_key {$PORKBUN_API_SECRET_KEY}
+	}
+}
+
+ntfy.{$DOMAIN} {
+	reverse_proxy ntfy-server:2586
+}
+
+dockhand.{$DOMAIN} {
+	reverse_proxy dockhand-app:3000
+}
+
+git.{$DOMAIN} {
+  reverse_proxy gitea-app:3000
+}
+
+vwarden.{$DOMAIN} {
+	reverse_proxy vaultwarden-app:80
+}
+
+searxng.{$DOMAIN} {
+	reverse_proxy searxng-app:8080
+}
+
+synology.{$DOMAIN} {
+	reverse_proxy 192.168.1.90:5443 {
+		transport http {
+			tls_insecure_skip_verify
+		}
+	}
+}
+
+https://*.{$DOMAIN}:1443 {
+	respond "OK" 200
+}
+
+:80 {
+	respond "OK" 200
+}
