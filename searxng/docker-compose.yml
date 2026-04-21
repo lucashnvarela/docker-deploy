@@ -1,0 +1,51 @@
+services:
+  app:
+    container_name: searxng-app
+    image: docker.io/searxng/searxng
+    restart: unless-stopped
+    networks:
+      - gateway
+      - private
+    volumes:
+      - ./config:/etc/searxng:ro
+      - app_cache:/var/cache/searxng:rw
+    environment:
+      SEARXNG_SECRET: ${SEARXNG_SECRET}
+      SEARXNG_BASE_URL: https://searxng.${DOMAIN}
+      SEARXNG_VALKEY_URL: valkey://valkey:6379/0
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- --tries=1 localhost:8080/healthz | grep 'OK' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 3
+    depends_on:
+      valkey:
+        condition: service_healthy
+
+  valkey:
+    container_name: searxng-valkey
+    image: docker.io/valkey/valkey
+    restart: unless-stopped
+    command: valkey-server --save 60 1 --loglevel debug
+    networks:
+      - private
+    volumes:
+      - /docker/searxng/valkey/config:/etc/valkey:rw
+      - /docker/searxng/valkey/data:/data:rw
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 3
+
+volumes:
+  app_cache:
+
+networks:
+  private:
+    name: searxng_network
+  gateway:
+    name: gateway_network
+    external: true
