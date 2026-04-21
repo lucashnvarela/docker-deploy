@@ -1,0 +1,58 @@
+services:
+  server:
+    container_name: ntfy-server
+    image: binwiederhier/ntfy
+    restart: unless-stopped
+    command: serve
+    init: true
+    networks:
+      - gateway
+      - private
+    volumes:
+      - ./config:/etc/ntfy:ro
+      - server_cache:/var/cache/ntfy:rw
+    environment:
+      TZ: ${TZ}
+      NTFY_BASE_URL: https://ntfy.${DOMAIN}
+      NTFY_LISTEN_HTTP: :2586
+      NTFY_BEHIND_PROXY: true
+      NTFY_DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database:5432/${POSTGRES_DB}
+      NTFY_AUTH_DEFAULT_ACCESS: deny-all
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- --tries=1 localhost:2586/v1/health | grep -Eo '\"healthy\":true' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 3
+    depends_on:
+      database:
+        condition: service_healthy
+
+  database:
+    container_name: ntfy-database
+    image: postgres
+    restart: unless-stopped
+    networks:
+      - private
+    volumes:
+      - /docker/ntfy/database:/var/lib/postgresql:rw
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    healthcheck:
+      test: ["CMD-SHELL", "sh -c 'pg_isready --username=${POSTGRES_USER} --dbname=${POSTGRES_DB}'"]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 3
+
+volumes:
+  server_cache:
+
+networks:
+  private:
+    name: ntfy_network
+  gateway:
+    name: gateway_network
+    external: true
