@@ -1,0 +1,19 @@
+services:
+  app:
+    container_name: watchtower-app
+    image: containrrr/watchtower
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      TZ: ${TZ}
+      DOCKER_API_VERSION: 1.54
+      WATCHTOWER_CLEANUP: true
+      WATCHTOWER_ROLLING_RESTART: true
+      WATCHTOWER_SCHEDULE: 0 0 4 * * MON
+      WATCHTOWER_NOTIFICATION_URL: ntfy://:${NTFY_TOKEN}@ntfy.${DOMAIN}/${NTFY_TOPIC}
+
+networks:
+  default:
+    name: gateway_network
+    external: true
