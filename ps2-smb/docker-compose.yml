@@ -1,0 +1,14 @@
+services:
+  server:
+    container_name: ps2-smb-server
+    image: fortu/ps2smb
+    restart: unless-stopped
+    ports:
+      - 446:445
+    volumes:
+      - ./config:/etc/samba:ro
+      - /volume1/ps2roms:/mnt/games:rw
+
+networks:
+  default:
+    name: ps2_smb_network
