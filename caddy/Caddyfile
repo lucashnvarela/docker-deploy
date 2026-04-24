@@ -14,7 +14,7 @@ dockhand.{$DOMAIN} {
 }
 
 git.{$DOMAIN} {
-  reverse_proxy gitea-app:3000
+	reverse_proxy gitea-app:3000
 }
 
 vwarden.{$DOMAIN} {
@@ -31,6 +31,34 @@ synology.{$DOMAIN} {
 			tls_insecure_skip_verify
 		}
 	}
+}
+
+jellyfin.{$DOMAIN} {
+	reverse_proxy servarr-jellyfin:8096
+}
+
+seerr.{$DOMAIN} {
+	reverse_proxy servarr-seerr:5055
+}
+
+sonarr.{$DOMAIN} {
+	reverse_proxy servarr-gluetun:8989
+}
+
+radarr.{$DOMAIN} {
+	reverse_proxy servarr-gluetun:7878
+}
+
+prowlarr.{$DOMAIN} {
+	reverse_proxy servarr-gluetun:9696
+}
+
+bittorrent.{$DOMAIN} {
+	reverse_proxy servarr-gluetun:8088
+}
+
+cleanuparr.{$DOMAIN} {
+	reverse_proxy servarr-cleanuparr:11011
 }
 
 https://*.{$DOMAIN}:1443 {
