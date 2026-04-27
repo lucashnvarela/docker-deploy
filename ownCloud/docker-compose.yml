@@ -1,0 +1,84 @@
+services:
+  server:
+    container_name: owncloud-server
+    image: owncloud/server
+    restart: unless-stopped
+    networks:
+      - gateway
+      - private
+    volumes:
+      - files:/mnt/data
+    environment:
+      OWNCLOUD_DOMAIN: owncloud.${DOMAIN}
+      OWNCLOUD_TRUSTED_DOMAINS: ${DOMAIN}
+      OWNCLOUD_DB_TYPE: mysql
+      OWNCLOUD_DB_NAME: owncloud
+      OWNCLOUD_DB_USERNAME: owncloud
+      OWNCLOUD_DB_PASSWORD: owncloud
+      OWNCLOUD_DB_HOST: mariadb
+      OWNCLOUD_ADMIN_USERNAME: ${ADMIN_USERNAME}
+      OWNCLOUD_ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      OWNCLOUD_MYSQL_UTF8MB4: true
+      OWNCLOUD_REDIS_ENABLED: true
+      OWNCLOUD_REDIS_HOST: redis
+    healthcheck:
+      test: ["CMD", "/usr/bin/healthcheck"]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 3
+    depends_on:
+      database:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  database:
+    container_name: owncloud-database
+    image: mariadb
+    restart: always
+    command: ["--max-allowed-packet=128M", "--innodb-log-file-size=64M"]
+    networks:
+      - private
+    volumes:
+      - database:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: owncloud
+      MYSQL_USER: owncloud
+      MYSQL_PASSWORD: owncloud
+      MYSQL_DATABASE: owncloud
+      MARIADB_AUTO_UPGRADE: 1
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-u", "root", "--password=owncloud"]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 3
+
+  redis:
+    container_name: owncloud-redis
+    image: redis
+    restart: unless-stopped
+    command: ["--databases", "1"]
+    networks:
+      - private
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 3
+    volumes:
+      - redis:/data
+
+volumes:
+  files:
+  database:
+  # redis:
+
+networks:
+  private:
+    name: owncloud_network
+  gateway:
+    name: gateway_network
+    external: true
