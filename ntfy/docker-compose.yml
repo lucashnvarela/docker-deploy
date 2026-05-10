@@ -9,7 +9,6 @@ services:
       - gateway
       - private
     volumes:
-      - ./config:/etc/ntfy:ro
       - server_cache:/var/cache/ntfy:rw
     environment:
       TZ: ${TZ}
@@ -18,6 +17,11 @@ services:
       NTFY_BEHIND_PROXY: true
       NTFY_DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database:5432/${POSTGRES_DB}
       NTFY_AUTH_DEFAULT_ACCESS: deny-all
+      NTFY_ENABLE_LOGIN: true
+      NTFY_REQUIRE_LOGIN: true
+      NTFY_AUTH_USERS: ${NTFY_AUTH_USERS}
+      NTFY_AUTH_TOKENS: ${NTFY_AUTH_TOKENS}
+      NTFY_AUTH_ACCESS: ${NTFY_AUTH_ACCESS}
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- --tries=1 localhost:2586/v1/health | grep -Eo '\"healthy\":true' || exit 1"]
       interval: 30s
