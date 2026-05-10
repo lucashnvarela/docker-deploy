@@ -7,10 +7,10 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
       TZ: ${TZ}
-      DOCKER_API_VERSION: 1.54
+      DOCKER_API_VERSION: ${DOCKER_API_VERSION}
       WATCHTOWER_CLEANUP: true
-      WATCHTOWER_ROLLING_RESTART: true
       WATCHTOWER_SCHEDULE: 0 0 4 * * MON
+      WATCHTOWER_NOTIFICATIONS_HOSTNAME: ${HOSTNAME}
       WATCHTOWER_NOTIFICATION_URL: ntfy://:${NTFY_TOKEN}@ntfy.${DOMAIN}/${NTFY_TOPIC}
 
 networks:
